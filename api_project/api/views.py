@@ -1,13 +1,15 @@
-from rest_framework import generics, viewsets
+from rest_framework import viewsets, generics, permissions
 from .models import Book
 from .serializers import BookSerializer
 
-# Existing ListAPIView
+# ListAPIView (read-only)
 class BookList(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticated]  # only authenticated users
 
-# ViewSet for all CRUD operations
+# Full CRUD ViewSet
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticated]  # only authenticated users
