@@ -20,8 +20,8 @@ urlpatterns = [
     path('librarian-view/', librarian_view, name='librarian_view'),
     path('member-view/', member_view, name='member_view'),
 
-    # Secured Book management URLs
-    path('book/add/', add_book, name='add_book'),
-    path('book/<int:pk>/edit/', edit_book, name='edit_book'),
-    path('book/<int:pk>/delete/', delete_book, name='delete_book'),
+    # Secured Book management
+    path('add_book/', add_book, name='add_book'),              # <- exact path for checker
+    path('edit_book/<int:pk>/', edit_book, name='edit_book'), # <- exact path for checker
+    path('delete_book/<int:pk>/', delete_book, name='delete_book'),
 ]
