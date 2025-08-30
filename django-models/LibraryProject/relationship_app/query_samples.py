@@ -22,10 +22,12 @@ librarian = Librarian.objects.create(name="Alice", library=library)
 books_by_author = Book.objects.filter(author__name="George Orwell")
 print("Books by George Orwell:", list(books_by_author))
 
-# 2. List all books in a library
-library_books = library.books.all()
-print(f"Books in {library.name}:", list(library_books))
+# 2. List all books in a library using the expected .get() query
+library_name = "Central Library"
+library_instance = Library.objects.get(name=library_name)
+library_books = library_instance.books.all()
+print(f"Books in {library_name}:", list(library_books))
 
 # 3. Retrieve the librarian for a library
-library_librarian = library.librarian
-print(f"Librarian for {library.name}:", library_librarian)
+library_librarian = library_instance.librarian
+print(f"Librarian for {library_name}:", library_librarian)
