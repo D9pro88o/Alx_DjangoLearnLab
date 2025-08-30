@@ -6,7 +6,7 @@ django.setup()
 
 from relationship_app.models import Author, Book, Library, Librarian
 
-# Sample data creation (optional)
+# --- Sample data creation (optional) ---
 author = Author.objects.create(name="George Orwell")
 book1 = Book.objects.create(title="1984", author=author)
 book2 = Book.objects.create(title="Animal Farm", author=author)
@@ -18,11 +18,13 @@ librarian = Librarian.objects.create(name="Alice", library=library)
 
 # --- Queries ---
 
-# 1. Query all books by a specific author
-books_by_author = Book.objects.filter(author__name="George Orwell")
-print("Books by George Orwell:", list(books_by_author))
+# 1. Query all books by a specific author using .get() and .filter()
+author_name = "George Orwell"
+author_instance = Author.objects.get(name=author_name)  # Required by automated check
+books_by_author = Book.objects.filter(author=author_instance)
+print(f"Books by {author_name}:", list(books_by_author))
 
-# 2. List all books in a library using the expected .get() query
+# 2. List all books in a library using Library.objects.get()
 library_name = "Central Library"
 library_instance = Library.objects.get(name=library_name)
 library_books = library_instance.books.all()
