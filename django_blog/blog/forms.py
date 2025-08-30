@@ -1,9 +1,7 @@
 from django import forms
-from .models import Comment
+from .models import Post
 
-class CommentForm(forms.ModelForm):
-    content = forms.CharField(widget=forms.Textarea(attrs={'rows':3}), label='')
-
+class PostForm(forms.ModelForm):
     class Meta:
-        model = Comment
-        fields = ['content']
+        model = Post
+        fields = ['title', 'content', 'tags']  # include tags

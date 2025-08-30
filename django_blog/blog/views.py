@@ -1,40 +1,19 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
-from .models import Comment
-from .forms import CommentForm
+from django.shortcuts import render
+from django.db.models import Q
+from .models import Post
+from taggit.models import Tag
 
+def search_posts(request):
+    query = request.GET.get('q')
+    results = Post.objects.filter(
+        Q(title__icontains=query) |
+        Q(content__icontains=query) |
+        Q(tags__name__icontains=query)
+    ).distinct() if query else Post.objects.none()
 
-class CommentCreateView(LoginRequiredMixin, CreateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = 'blog/add_comment.html'
+    return render(request, 'blog/search_results.html', {'posts': results, 'query': query})
 
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        form.instance.post_id = self.kwargs['post_id']
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.kwargs['post_id']})
-class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = 'blog/edit_comment.html'
-
-    def test_func(self):
-        comment = self.get_object()
-        return self.request.user == comment.author
-
-    def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
-class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Comment
-    template_name = 'blog/delete_comment.html'
-
-    def test_func(self):
-        comment = self.get_object()
-        return self.request.user == comment.author
-
-    def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+def tagged_posts(request, tag_slug):
+    tag = Tag.objects.get(slug=tag_slug)
+    posts = Post.objects.filter(tags__in=[tag])
+    return render(request, 'blog/tagged_posts.html', {'posts': posts, 'tag': tag})
