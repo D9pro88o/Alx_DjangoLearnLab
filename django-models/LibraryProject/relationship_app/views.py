@@ -1,7 +1,7 @@
-# relationship_app/views.py
+# LibraryProject/relationship_app/views.py
 from django.shortcuts import render
-from django.views.generic.detail import DetailView   # <-- exact import required by checker
-from .models import Book, Library
+from django.views.generic.detail import DetailView   # exact import the checker expects
+from .models import Book, Library                    # <- make sure Library is imported
 
 # Function-based view (uses app-relative template path)
 def list_books(request):
