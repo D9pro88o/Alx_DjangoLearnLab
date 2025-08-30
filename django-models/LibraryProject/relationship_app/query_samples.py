@@ -7,7 +7,7 @@ django.setup()
 from relationship_app.models import Author, Book, Library, Librarian
 
 # --- Sample data creation (optional) ---
-author = Author.objects.create(name="George Orwell")  # Variable must be named 'author'
+author = Author.objects.create(name="George Orwell")
 book1 = Book.objects.create(title="1984", author=author)
 book2 = Book.objects.create(title="Animal Farm", author=author)
 
@@ -18,18 +18,18 @@ librarian = Librarian.objects.create(name="Alice", library=library)
 
 # --- Queries ---
 
-# 1. Query all books by a specific author using .get() and .filter()
+# 1. Query all books by a specific author
 author_name = "George Orwell"
-author = Author.objects.get(name=author_name)  # Variable must be 'author'
-books_by_author = Book.objects.filter(author=author)  # Variable must be 'author'
+author = Author.objects.get(name=author_name)
+books_by_author = Book.objects.filter(author=author)
 print(f"Books by {author_name}:", list(books_by_author))
 
-# 2. List all books in a library using Library.objects.get()
+# 2. List all books in a library
 library_name = "Central Library"
 library_instance = Library.objects.get(name=library_name)
 library_books = library_instance.books.all()
 print(f"Books in {library_name}:", list(library_books))
 
-# 3. Retrieve the librarian for a library
-library_librarian = library_instance.librarian
+# 3. Retrieve the librarian for a library using Librarian.objects.get
+library_librarian = Librarian.objects.get(library=library_instance)
 print(f"Librarian for {library_name}:", library_librarian)
