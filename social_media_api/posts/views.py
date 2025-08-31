@@ -1,13 +1,39 @@
-from rest_framework import viewsets, permissions
-from rest_framework.decorators import action
+from rest_framework import viewsets, permissions, filters, generics
 from rest_framework.response import Response
-from .models import Post
-from .serializers import PostSerializer
+from .models import Post, Comment
+from .serializers import PostSerializer, CommentSerializer
+from accounts.models import CustomUser
+from .permissions import IsOwnerOrReadOnly
 
-class FeedViewSet(viewsets.ReadOnlyModelViewSet):
+# ----------------- Post ViewSet -----------------
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'content']
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+# ----------------- Comment ViewSet -----------------
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all().order_by('-created_at')
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+# ----------------- Feed View -----------------
+class FeedView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        return Post.objects.filter(author__in=user.following.all()).order_by('-created_at')
+    def get(self, request):
+        user = request.user
+        following_users = user.following.all()
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
