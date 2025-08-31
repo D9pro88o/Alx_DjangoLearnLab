@@ -1,30 +1,33 @@
-from rest_framework.decorators import action
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework import status
-from .models import Post, Like
-from notifications.models import Notification
-from .serializers import LikeSerializer
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
+from .models import Post, Comment, Like
+from .serializers import PostSerializer, CommentSerializer
+
+# Example for PostViewSet if you already have it
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
 
     @action(detail=True, methods=['post'])
     def like(self, request, pk=None):
-        post = self.get_object()
-        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        post = get_object_or_404(Post, pk=pk)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
         if created:
-            Notification.objects.create(
-                recipient=post.author,
-                actor=request.user,
-                verb='liked your post',
-                target=post
-            )
-        serializer = LikeSerializer(like)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'status': 'post liked'})
+        else:
+            return Response({'status': 'already liked'})
 
     @action(detail=True, methods=['post'])
     def unlike(self, request, pk=None):
-        post = self.get_object()
-        Like.objects.filter(post=post, user=request.user).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        post = get_object_or_404(Post, pk=pk)
+        try:
+            like = Like.objects.get(user=request.user, post=post)
+            like.delete()
+            return Response({'status': 'post unliked'})
+        except Like.DoesNotExist:
+            return Response({'status': 'not liked yet'})
