@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$ys4j9!j=_!jw#cvj+y_@b*wca(xa0pa29n65gsvw**y+nmok='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com', 'IP_address']  # Add your server IP or domain
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'accounts',
     'posts',
     'notifications',
-    
+
 ]
 
 # REST Framework token auth
@@ -138,3 +138,12 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_SSL_REDIRECT = True  # Only if using HTTPS
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_ROOT = BASE_DIR / 'media'
+
