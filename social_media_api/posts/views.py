@@ -1,39 +1,30 @@
-from rest_framework import viewsets, permissions, filters, generics
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
-from accounts.models import CustomUser
-from .permissions import IsOwnerOrReadOnly
+from rest_framework import status
+from .models import Post, Like
+from notifications.models import Notification
+from .serializers import LikeSerializer
 
-# ----------------- Post ViewSet -----------------
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'content']
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    @action(detail=True, methods=['post'])
+    def like(self, request, pk=None):
+        post = self.get_object()
+        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        if created:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb='liked your post',
+                target=post
+            )
+        serializer = LikeSerializer(like)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-# ----------------- Comment ViewSet -----------------
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all().order_by('-created_at')
-    serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-
-# ----------------- Feed View -----------------
-class FeedView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        following_users = user.following.all()
-        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
+    @action(detail=True, methods=['post'])
+    def unlike(self, request, pk=None):
+        post = self.get_object()
+        Like.objects.filter(post=post, user=request.user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
