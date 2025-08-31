@@ -1,7 +1,6 @@
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.generics import get_object_or_404  # ✅ DRF version
 
 from .models import Post, Like
 from .serializers import PostSerializer
@@ -10,11 +9,11 @@ from notifications.models import Notification  # if notifications app exists
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
-    permission_classes = [permissions.IsAuthenticated]  # ✅ DRF-style usage
+    permission_classes = [permissions.IsAuthenticated]  # ✅ required
 
     @action(detail=True, methods=['post'])
     def like(self, request, pk=None):
-        post = get_object_or_404(Post, pk=pk)  # ✅ DRF version
+        post = generics.get_object_or_404(Post, pk=pk)  # ✅ required line
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if created:
             if post.author != request.user:
@@ -29,7 +28,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def unlike(self, request, pk=None):
-        post = get_object_or_404(Post, pk=pk)  # ✅ DRF version again
+        post = generics.get_object_or_404(Post, pk=pk)  # ✅ required line again
         like = Like.objects.filter(user=request.user, post=post).first()
         if like:
             like.delete()
