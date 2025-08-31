@@ -1,24 +1,24 @@
 from rest_framework import viewsets, status
-from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
-from .models import Post, Comment, Like
-from .serializers import PostSerializer, CommentSerializer
-from notifications.models import Notification  # make sure your notifications app exists
+from .models import Post, Like
+from .serializers import PostSerializer
+from notifications.models import Notification  # Make sure notifications app exists
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Ensures only logged-in users can access
 
     @action(detail=True, methods=['post'])
     def like(self, request, pk=None):
-        post = get_object_or_404(Post, pk=pk)
+        post = get_object_or_404(Post, pk=pk)  # Safely fetch the post
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if created:
-            # Create a notification for the post author
+            # Create notification for the author
             if post.author != request.user:
                 Notification.objects.create(
                     recipient=post.author,
@@ -32,9 +32,8 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def unlike(self, request, pk=None):
         post = get_object_or_404(Post, pk=pk)
-        try:
-            like = Like.objects.get(user=request.user, post=post)
+        like = Like.objects.filter(user=request.user, post=post).first()
+        if like:
             like.delete()
             return Response({'status': 'post unliked'})
-        except Like.DoesNotExist:
-            return Response({'status': 'not liked yet'})
+        return Response({'status': 'not liked yet'})
