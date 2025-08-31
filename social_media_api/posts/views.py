@@ -1,22 +1,21 @@
+from django.shortcuts import get_object_or_404  # ✅ required
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated  # ✅ required
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 
 from .models import Post, Like
 from .serializers import PostSerializer
-from notifications.models import Notification  # optional, if notifications app exists
+from notifications.models import Notification  # if notifications app exists
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]  # ✅ Ensures user must be logged in
+    permission_classes = [IsAuthenticated]  # ✅ ensures authentication
 
     @action(detail=True, methods=['post'])
     def like(self, request, pk=None):
-        # ✅ Uses get_object_or_404
-        post = get_object_or_404(Post, pk=pk)
+        post = get_object_or_404(Post, pk=pk)  # ✅ safe lookup
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if created:
             if post.author != request.user:
@@ -31,7 +30,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def unlike(self, request, pk=None):
-        post = get_object_or_404(Post, pk=pk)  # ✅ Again, safe lookup
+        post = get_object_or_404(Post, pk=pk)  # ✅ safe lookup again
         like = Like.objects.filter(user=request.user, post=post).first()
         if like:
             like.delete()
