@@ -4,5 +4,5 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
-    path('login/', obtain_auth_token, name='api_token_auth'),  # built-in view to obtain token by username+password
+    path('login/', obtain_auth_token, name='api_token_auth'),
 ]
