@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import CustomUser
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User  # or your custom User model
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']  # just the fields you want exposed fields = ['id', 'username', 'email', 'bio', 'profile_picture', 'followers']
+        # only include basic fields; no token creation or custom CharFields
+        fields = ['id', 'username', 'email']
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
