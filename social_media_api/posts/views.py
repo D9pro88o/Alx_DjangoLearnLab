@@ -1,23 +1,13 @@
 from rest_framework import viewsets, permissions
-from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Post
+from .serializers import PostSerializer
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.author == request.user or request.method in permissions.SAFE_METHODS
-
-class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().order_by('-created_at')
+class FeedViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PostSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all().order_by('-created_at')
-    serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    def get_queryset(self):
+        user = self.request.user
+        return Post.objects.filter(author__in=user.following.all()).order_by('-created_at')

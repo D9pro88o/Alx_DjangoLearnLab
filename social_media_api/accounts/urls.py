@@ -1,11 +1,7 @@
 from django.urls import path
-from .views import RegisterView, LoginView
-# social_media_api/urls.py
-from django.urls import include
+from .views import follow_user, unfollow_user
 
 urlpatterns = [
-    path('api/', include('posts.urls')),  # posts and comments API
-    # other urls...
-    path("register/", RegisterView.as_view()),
-    path("login/", LoginView.as_view()),  # <- make sure this line exists
+    path('follow/<int:user_id>/', follow_user, name='follow-user'),
+    path('unfollow/<int:user_id>/', unfollow_user, name='unfollow-user'),
 ]
