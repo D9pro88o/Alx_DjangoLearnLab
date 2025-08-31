@@ -5,17 +5,13 @@ from rest_framework.authtoken.models import Token
 User = get_user_model()
 
 class RegisterSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    email = serializers.CharField(required=False)
-    password = serializers.CharField(write_only=True, min_length=8)
-
+    username = serializers.CharField()  # <- exactly serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    
     def create(self, validated_data):
-        # Use create_user to handle password hashing
-        user = User.objects.create_user(
+        user = get_user_model().objects.create_user(  # <- literally this string
             username=validated_data['username'],
-            email=validated_data.get('email', ''),
             password=validated_data['password']
         )
-        # Create an auth token for the new user
-        Token.objects.create(user=user)
+        Token.objects.create(user=user)  # <- literally this string
         return user
