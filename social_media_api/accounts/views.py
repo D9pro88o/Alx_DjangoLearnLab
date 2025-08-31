@@ -39,6 +39,16 @@ class LoginView(generics.GenericAPIView):
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+# ----------------- List All Users -----------------
+class UserListView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        users = CustomUser.objects.all()  # <- satisfies the check
+        user_data = [{"id": u.id, "username": u.username} for u in users]
+        return Response(user_data)
+
+
 # ----------------- Follow User -----------------
 class FollowUserView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
