@@ -1,11 +1,15 @@
+# accounts/serializers.py
+
 from rest_framework import serializers
-from django.contrib.auth.models import User  # or your custom User model
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        # only include basic fields; no token creation or custom CharFields
         fields = ['id', 'username', 'email']
+        read_only_fields = ['id']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
